@@ -138,29 +138,63 @@ def collect_model_downloads() -> Tuple[DownloadSet, DownloadSet]:
 
 
 def pre_check() -> bool:
-	return True
+	model_hash_set, model_source_set = collect_model_downloads()
+
+	return conditional_download_hashes(model_hash_set) and conditional_download_sources(model_source_set)
 
 
 def analyse_stream(vision_frame : VisionFrame, video_fps : Fps) -> bool:
+	global STREAM_COUNTER
+
+	STREAM_COUNTER = STREAM_COUNTER + 1
+	if STREAM_COUNTER % int(video_fps) == 0:
+		return analyse_frame(vision_frame)
 	return False
 
 
 def analyse_frame(vision_frame : VisionFrame) -> bool:
-	return False
+	return detect_nsfw(vision_frame)
 
 
 @lru_cache()
 def analyse_image(image_path : str) -> bool:
-	return False
+	vision_frame = read_image(image_path)
+	return analyse_frame(vision_frame)
 
 
 @lru_cache()
 def analyse_video(video_path : str, trim_frame_start : int, trim_frame_end : int) -> bool:
-	return False
+	video_fps = detect_video_fps(video_path)
+	frame_range = range(trim_frame_start, trim_frame_end)
+	rate = 0.0
+	total = 0
+	counter = 0
+
+	with tqdm(total = len(frame_range), desc = translator.get('analysing'), unit = 'frame', ascii = ' =', disable = state_manager.get_item('log_level') in [ 'warn', 'error' ]) as progress:
+
+		for frame_number in frame_range:
+			if frame_number % int(video_fps) == 0:
+				vision_frame = read_video_frame(video_path, frame_number)
+				total += 1
+
+				if analyse_frame(vision_frame):
+					counter += 1
+
+			if counter > 0 and total > 0:
+				rate = counter / total * 100
+
+			progress.set_postfix(rate = rate)
+			progress.update()
+
+	return bool(rate > 10.0)
 
 
 def detect_nsfw(vision_frame : VisionFrame) -> bool:
-	return False
+	is_nsfw_1 = detect_with_nsfw_1(vision_frame)
+	is_nsfw_2 = detect_with_nsfw_2(vision_frame)
+	is_nsfw_3 = detect_with_nsfw_3(vision_frame)
+
+	return is_nsfw_1 and is_nsfw_2 or is_nsfw_1 and is_nsfw_3 or is_nsfw_2 and is_nsfw_3
 
 
 def detect_with_nsfw_1(vision_frame : VisionFrame) -> bool:

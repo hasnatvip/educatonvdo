@@ -5,14 +5,3 @@ __pycache__
 .idea
 .jobs
 .vscode
-.venv
-venv/
-env/
-*-env/
-*.log
-.DS_Store
-.env
-.ipynb_checkpoints
-temp/
-out/
-.python-version

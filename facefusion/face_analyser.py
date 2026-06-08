@@ -28,9 +28,9 @@ def create_faces(vision_frame : VisionFrame, bounding_boxes : List[BoundingBox],
 		face_landmark_score_68 = 0.0
 		face_angle = estimate_face_angle(face_landmark_68_5)
 
-		if False:
+		if state_manager.get_item('face_landmarker_score') > 0:
 			face_landmark_68, face_landmark_score_68 = detect_face_landmark(vision_frame, bounding_box, face_angle)
-		if face_landmark_score_68 > state_manager.get_item('face_landmarker_score') and False:
+		if face_landmark_score_68 > state_manager.get_item('face_landmarker_score'):
 			face_landmark_5_68 = convert_to_face_landmark_5(face_landmark_68)
 
 		face_landmark_set : FaceLandmarkSet =\

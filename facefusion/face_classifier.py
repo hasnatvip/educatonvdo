@@ -64,11 +64,28 @@ def get_model_options() -> ModelOptions:
 
 
 def pre_check() -> bool:
-	return True
+	model_hash_set = get_model_options().get('hashes')
+	model_source_set = get_model_options().get('sources')
+
+	return conditional_download_hashes(model_hash_set) and conditional_download_sources(model_source_set)
 
 
 def classify_face(temp_vision_frame : VisionFrame, face_landmark_5 : FaceLandmark5) -> Tuple[Gender, Age, Race]:
-	return 'male', range(20, 29), 'white'
+	model_template = get_model_options().get('template')
+	model_size = get_model_options().get('size')
+	model_mean = get_model_options().get('mean')
+	model_standard_deviation = get_model_options().get('standard_deviation')
+	crop_vision_frame, _ = warp_face_by_face_landmark_5(temp_vision_frame, face_landmark_5, model_template, model_size)
+	crop_vision_frame = crop_vision_frame.astype(numpy.float32)[:, :, ::-1] / 255.0
+	crop_vision_frame -= model_mean
+	crop_vision_frame /= model_standard_deviation
+	crop_vision_frame = crop_vision_frame.transpose(2, 0, 1)
+	crop_vision_frame = numpy.expand_dims(crop_vision_frame, axis = 0)
+	gender_id, age_id, race_id = forward(crop_vision_frame)
+	gender = categorize_gender(gender_id[0])
+	age = categorize_age(age_id[0])
+	race = categorize_race(race_id[0])
+	return gender, age, race
 
 
 def forward(crop_vision_frame : VisionFrame) -> Tuple[List[int], List[int], List[int]]:
