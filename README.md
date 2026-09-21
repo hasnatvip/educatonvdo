@@ -1,23 +1,23 @@
-FaceFusion
+EducationVdo
 ==========
 
 > Industry leading face manipulation platform.
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/facefusion/facefusion/ci.yml.svg?branch=master)](https://github.com/facefusion/facefusion/actions?query=workflow:ci)
-[![Coverage Status](https://img.shields.io/coveralls/facefusion/facefusion.svg)](https://coveralls.io/r/facefusion/facefusion)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/educationvdo/educationvdo/ci.yml.svg?branch=master)](https://github.com/educationvdo/educationvdo/actions?query=workflow:ci)
+[![Coverage Status](https://img.shields.io/coveralls/educationvdo/educationvdo.svg)](https://coveralls.io/r/educationvdo/educationvdo)
 ![License](https://img.shields.io/badge/license-OpenRAIL--AS-green)
 
 
 Preview
 -------
 
-![Preview](https://raw.githubusercontent.com/facefusion/facefusion/master/.github/preview.png?sanitize=true)
+![Preview](https://raw.githubusercontent.com/educationvdo/educationvdo/master/.github/preview.png?sanitize=true)
 
 
 Installation
 ------------
 
-Be aware, the [installation](https://docs.facefusion.io/installation) needs technical skills and is not recommended for beginners. In case you are not comfortable using a terminal, our [Windows Installer](http://windows-installer.facefusion.io) and [macOS Installer](http://macos-installer.facefusion.io) get you started.
+Be aware, the [installation](https://docs.educationvdo.io/installation) needs technical skills and is not recommended for beginners. In case you are not comfortable using a terminal, our [Windows Installer](http://windows-installer.educationvdo.io) and [macOS Installer](http://macos-installer.educationvdo.io) get you started.
 
 
 Usage
@@ -26,7 +26,7 @@ Usage
 Run the command:
 
 ```
-python facefusion.py [commands] [options]
+python educationvdo.py [commands] [options]
 
 options:
   -h, --help                                      show this help message and exit
@@ -58,4 +58,4 @@ commands:
 Documentation
 -------------
 
-Read the [documentation](https://docs.facefusion.io) for a deep dive.
+Read the [documentation](https://docs.educationvdo.io) for a deep dive.

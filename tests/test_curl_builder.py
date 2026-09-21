@@ -1,7 +1,7 @@
 from shutil import which
 
-from facefusion import metadata
-from facefusion.curl_builder import chain, ping, run, set_timeout
+from educationvdo import metadata
+from educationvdo.curl_builder import chain, ping, run, set_timeout
 
 
 def test_run() -> None:

@@ -5,8 +5,8 @@ import os
 sys.path.append(os.getcwd())
 
 try:
-    print("Attempting to import facefusion.processors.modules.face_swapper.core...")
-    import facefusion.processors.modules.face_swapper.core
+    print("Attempting to import educationvdo.processors.modules.face_swapper.core...")
+    import educationvdo.processors.modules.face_swapper.core
     print("Import successful!")
 except Exception as e:
     print(f"Import failed with error: {e}")

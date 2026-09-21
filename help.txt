@@ -1,4 +1,4 @@
-usage: facefusion.py run [-h] [--config-path CONFIG_PATH]
+usage: educationvdo.py run [-h] [--config-path CONFIG_PATH]
                          [--temp-path TEMP_PATH] [--jobs-path JOBS_PATH]
                          [-s SOURCE_PATHS [SOURCE_PATHS ...]] [-t TARGET_PATH]
                          [-o OUTPUT_PATH]

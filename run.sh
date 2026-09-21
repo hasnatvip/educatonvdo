@@ -1,3 +1,3 @@
 #!/bin/bash
-source facefusion-env/bin/activate
-python facefusion.py run
+source educationvdo-env/bin/activate
+python educationvdo.py run --execution-providers coreml cpu --execution-thread-count 8 --video-memory-strategy tolerant

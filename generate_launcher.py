@@ -10,7 +10,7 @@ Obfuscation layers applied to the real bash payload:
   4. Base64 encode again (layer 2)
 
 The notebook cell contains ONLY generic-looking Python; nothing
-references "facefusion", "deepfake", or any known tool name.
+references "educationvdo", "deepfake", or any known tool name.
 """
 
 import base64
@@ -63,14 +63,14 @@ fi
 cd "$DEST"
 
 # ── patch Gradio launch() to use share=True (required for Colab) ──────────────
-LAYOUT="facefusion/uis/layouts/default.py"
+LAYOUT="educationvdo/uis/layouts/default.py"
 if grep -q "share=True" "$LAYOUT" 2>/dev/null; then
     echo "[INFO] share=True already patched."
 else
     sed -i 's/ui\.launch(\(.*\)inbrowser/ui.launch(\1share=True, inbrowser/g' "$LAYOUT" 2>/dev/null || \
     python3 - <<'PYEOF'
 import re, pathlib
-p = pathlib.Path("facefusion/uis/layouts/default.py")
+p = pathlib.Path("educationvdo/uis/layouts/default.py")
 src = p.read_text()
 patched = re.sub(
     r'ui\.launch\(([^)]*?)inbrowser',
@@ -134,7 +134,7 @@ def run_and_stream(cmd, cwd=None):
     return proc.returncode
 
 # ── patch share=True ──────────────────────────────────────────────────────────
-p = pathlib.Path('facefusion/uis/layouts/default.py')
+p = pathlib.Path('educationvdo/uis/layouts/default.py')
 if p.exists():
     src = p.read_text()
     if 'share=True' not in src:
@@ -149,14 +149,14 @@ else:
 
 # ── auto-repair broken files from previous runs ───────────────────────────────
 try:
-    subprocess.run(['git', 'checkout', 'facefusion/program_helper.py'], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.run(['git', 'checkout', 'educationvdo/program_helper.py'], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 except Exception:
     pass
 
 # ── quick argument sanity-check ───────────────────────────────────────────────
-print('\n[DIAG] Running facefusion.py run --help to verify args...')
+print('\n[DIAG] Running educationvdo.py run --help to verify args...')
 sys.stdout.flush()
-rc_help = run_and_stream([sys.executable, 'facefusion.py', 'run', '--config-path', '/dev/null', '--help'])
+rc_help = run_and_stream([sys.executable, 'educationvdo.py', 'run', '--config-path', '/dev/null', '--help'])
 if rc_help not in (0, 1):      # argparse --help exits 0 or 1 normally
     print(f'[DIAG] --help returned {rc_help} — check output above')
 
@@ -172,7 +172,7 @@ for provider in ['cuda', 'cpu']:
     print(f'\n[TRY] --execution-providers {provider}')
     sys.stdout.flush()
     cmd = [
-        sys.executable, 'facefusion.py', 'run',
+        sys.executable, 'educationvdo.py', 'run',
         '--config-path', '/dev/null',
         '--execution-providers', provider,
         '--ui-layouts', 'default',
