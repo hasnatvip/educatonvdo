@@ -154,7 +154,10 @@ def resolve_file_paths(directory_path : str) -> List[str]:
 
 def resolve_file_pattern(file_pattern : str) -> List[str]:
 	if in_directory(file_pattern):
-		return sorted(glob.glob(file_pattern))
+		file_directory_path = os.path.dirname(file_pattern)
+		file_name = os.path.basename(file_pattern)
+		escaped_pattern = os.path.join(glob.escape(file_directory_path), file_name)
+		return sorted(glob.glob(escaped_pattern))
 	return []
 
 
