@@ -202,6 +202,8 @@ def update_preview_image(preview_mode : PreviewMode, preview_resolution : str, f
 		reference_vision_frame = read_static_image(state_manager.get_item('target_path'))
 		target_vision_frame = read_static_image(state_manager.get_item('target_path'), 'rgba')
 		preview_vision_frame = process_preview_frame(reference_vision_frame, source_vision_frames, source_audio_frame, source_voice_frame, [ target_vision_frame ], preview_mode, preview_resolution)
+		if preview_vision_frame is None:
+			return gradio.Image(value = None, elem_classes = None)
 		preview_vision_frame = cv2.cvtColor(preview_vision_frame, cv2.COLOR_BGRA2RGBA)
 		return gradio.Image(value = preview_vision_frame, elem_classes = [ 'image-preview', 'is-' + detect_frame_orientation(preview_vision_frame) ])
 
@@ -209,6 +211,8 @@ def update_preview_image(preview_mode : PreviewMode, preview_resolution : str, f
 		reference_vision_frame = read_video_frame(state_manager.get_item('target_path'), state_manager.get_item('reference_frame_number'))
 		target_vision_frames = select_video_frames(state_manager.get_item('target_path'), frame_number, state_manager.get_item('target_frame_amount'))
 		preview_vision_frame = process_preview_frame(reference_vision_frame, source_vision_frames, source_audio_frame, source_voice_frame, target_vision_frames, preview_mode, preview_resolution)
+		if preview_vision_frame is None:
+			return gradio.Image(value = None, elem_classes = None)
 		preview_vision_frame = cv2.cvtColor(preview_vision_frame, cv2.COLOR_BGRA2RGBA)
 		return gradio.Image(value = preview_vision_frame, elem_classes = [ 'image-preview', 'is-' + detect_frame_orientation(preview_vision_frame) ])
 	return gradio.Image(value = None, elem_classes = None)
@@ -221,10 +225,12 @@ def clear_and_update_preview_image(preview_mode : PreviewMode, preview_resolutio
 
 def process_preview_frame(reference_vision_frame : VisionFrame, source_vision_frames : List[VisionFrame], source_audio_frame : AudioFrame, source_voice_frame : AudioFrame, target_vision_frames : List[VisionFrame], preview_mode : PreviewMode, preview_resolution : str) -> VisionFrame:
 	target_vision_frame = get_middle(target_vision_frames)
+	if target_vision_frame is None:
+		return None
 	target_vision_frame = restrict_frame(target_vision_frame, unpack_resolution(preview_resolution))
 	temp_vision_mask = extract_vision_mask(target_vision_frame)
 	target_vision_frame = merge_vision_mask(target_vision_frame, temp_vision_mask)
-	target_vision_frames = [ restrict_frame(vision_frame, unpack_resolution(preview_resolution))[:, :, :3] for vision_frame in target_vision_frames ]
+	target_vision_frames = [ restrict_frame(vision_frame, unpack_resolution(preview_resolution))[:, :, :3] for vision_frame in target_vision_frames if vision_frame is not None ]
 	temp_vision_frame = target_vision_frame.copy()
 
 	if analyse_frame(target_vision_frame[:, :, :3]):
