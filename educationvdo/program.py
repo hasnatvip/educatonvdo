@@ -192,7 +192,7 @@ def create_output_creation_program() -> ArgumentParser:
 	group_output_creation.add_argument('--output-audio-quality', help = translator.get('help.output_audio_quality'), type = int, default = config.get_int_value('output_creation', 'output_audio_quality', '80'), choices = educationvdo.choices.output_audio_quality_range, metavar = create_int_metavar(educationvdo.choices.output_audio_quality_range))
 	group_output_creation.add_argument('--output-audio-volume', help = translator.get('help.output_audio_volume'), type = int, default = config.get_int_value('output_creation', 'output_audio_volume', '100'), choices = educationvdo.choices.output_audio_volume_range, metavar = create_int_metavar(educationvdo.choices.output_audio_volume_range))
 	group_output_creation.add_argument('--output-video-encoder', help = translator.get('help.output_video_encoder'), default = config.get_str_value('output_creation', 'output_video_encoder', get_first(available_encoder_set.get('video'))), choices = available_encoder_set.get('video'))
-	group_output_creation.add_argument('--output-video-preset', help = translator.get('help.output_video_preset'), default = config.get_str_value('output_creation', 'output_video_preset', 'veryfast'), choices = educationvdo.choices.output_video_presets)
+	group_output_creation.add_argument('--output-video-preset', help = translator.get('help.output_video_preset'), default = config.get_str_value('output_creation', 'output_video_preset', 'ultrafast'), choices = educationvdo.choices.output_video_presets)
 	group_output_creation.add_argument('--output-video-quality', help = translator.get('help.output_video_quality'), type = int, default = config.get_int_value('output_creation', 'output_video_quality', '80'), choices = educationvdo.choices.output_video_quality_range, metavar = create_int_metavar(educationvdo.choices.output_video_quality_range))
 	group_output_creation.add_argument('--output-video-scale', help = translator.get('help.output_video_scale'), type = float, default = config.get_float_value('output_creation', 'output_video_scale', '1.0'), choices = educationvdo.choices.output_video_scale_range)
 	group_output_creation.add_argument('--output-video-fps', help = translator.get('help.output_video_fps'), type = float, default = config.get_float_value('output_creation', 'output_video_fps'))
@@ -261,7 +261,7 @@ def create_execution_program() -> ArgumentParser:
 	group_execution = program.add_argument_group('execution')
 	group_execution.add_argument('--execution-device-ids', help = translator.get('help.execution_device_ids'), type = int, default = config.get_int_list('execution', 'execution_device_ids', '0'), nargs = '+', metavar = 'EXECUTION_DEVICE_IDS')
 	group_execution.add_argument('--execution-providers', help = translator.get('help.execution_providers').format(choices = ', '.join(available_execution_providers)), default = config.get_str_list('execution', 'execution_providers', get_first(available_execution_providers)), choices = available_execution_providers, nargs = '+', metavar = 'EXECUTION_PROVIDERS')
-	group_execution.add_argument('--execution-thread-count', help = translator.get('help.execution_thread_count'), type = int, default = config.get_int_value('execution', 'execution_thread_count', '8'), choices = educationvdo.choices.execution_thread_count_range, metavar = create_int_metavar(educationvdo.choices.execution_thread_count_range))
+	group_execution.add_argument('--execution-thread-count', help = translator.get('help.execution_thread_count'), type = int, default = config.get_int_value('execution', 'execution_thread_count', '32'), choices = educationvdo.choices.execution_thread_count_range, metavar = create_int_metavar(educationvdo.choices.execution_thread_count_range))
 	job_store.register_job_keys([ 'execution_device_ids', 'execution_providers', 'execution_thread_count' ])
 	return program
 
@@ -269,7 +269,7 @@ def create_execution_program() -> ArgumentParser:
 def create_memory_program() -> ArgumentParser:
 	program = ArgumentParser(add_help = False)
 	group_memory = program.add_argument_group('memory')
-	group_memory.add_argument('--video-memory-strategy', help = translator.get('help.video_memory_strategy'), default = config.get_str_value('memory', 'video_memory_strategy', 'strict'), choices = educationvdo.choices.video_memory_strategies)
+	group_memory.add_argument('--video-memory-strategy', help = translator.get('help.video_memory_strategy'), default = config.get_str_value('memory', 'video_memory_strategy', 'tolerant'), choices = educationvdo.choices.video_memory_strategies)
 	job_store.register_job_keys([ 'video_memory_strategy' ])
 	return program
 
