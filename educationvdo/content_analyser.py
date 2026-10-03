@@ -29,6 +29,10 @@ def clear_inference_pool() -> None:
 	return None
 
 
+def override_inference_providers():
+	return []
+
+
 def collect_model_downloads():
 	"""
 	NSFW model downloads are disabled.
