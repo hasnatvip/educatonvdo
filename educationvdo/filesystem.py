@@ -74,7 +74,11 @@ def are_audios(audio_paths : List[str]) -> bool:
 
 
 def is_image(image_path : str) -> bool:
-	return is_file(image_path) and get_file_format(image_path) in educationvdo.choices.image_formats
+	return is_file(image_path) and is_image_path(image_path)
+
+
+def is_image_path(image_path : str) -> bool:
+	return get_file_format(image_path) in educationvdo.choices.image_formats
 
 
 def has_image(image_paths : List[str]) -> bool:
@@ -90,7 +94,11 @@ def are_images(image_paths : List[str]) -> bool:
 
 
 def is_video(video_path : str) -> bool:
-	return is_file(video_path) and get_file_format(video_path) in educationvdo.choices.video_formats
+	return is_file(video_path) and is_video_path(video_path)
+
+
+def is_video_path(video_path : str) -> bool:
+	return get_file_format(video_path) in educationvdo.choices.video_formats
 
 
 def has_video(video_paths : List[str]) -> bool:
@@ -114,6 +122,12 @@ def filter_audio_paths(paths : List[str]) -> List[str]:
 def filter_image_paths(paths : List[str]) -> List[str]:
 	if paths:
 		return [ path for path in paths if is_image(path) ]
+	return []
+
+
+def filter_video_paths(paths : List[str]) -> List[str]:
+	if paths:
+		return [ path for path in paths if is_video(path) ]
 	return []
 
 

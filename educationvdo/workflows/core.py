@@ -5,11 +5,11 @@ import numpy
 from educationvdo import logger, process_manager, state_manager, translator
 from educationvdo.audio import create_empty_audio_frame, get_audio_frame, get_voice_frame
 from educationvdo.common_helper import get_first
-from educationvdo.filesystem import filter_audio_paths
+from educationvdo.filesystem import filter_audio_paths, filter_video_paths, is_image, is_video
 from educationvdo.processors.core import get_processors_modules
 from educationvdo.temp_helper import clear_temp_directory, create_temp_directory
 from educationvdo.types import AudioFrame, ErrorCode, VisionFrame
-from educationvdo.vision import conditional_merge_vision_mask, detect_video_fps, extract_vision_mask, read_static_image, read_static_images, read_static_video_frame, resolve_extract_frame_number, resolve_target_frame_number, restrict_trim_frame, restrict_video_fps, select_video_frames
+from educationvdo.vision import conditional_merge_vision_mask, count_video_frame_total, detect_video_fps, extract_vision_mask, read_static_image, read_static_images, read_static_video_frame, read_video_frame, resolve_extract_frame_number, resolve_target_frame_number, restrict_trim_frame, restrict_video_fps, select_video_frames
 
 
 def is_process_stopping() -> bool:
@@ -32,52 +32,84 @@ def clear() -> ErrorCode:
 
 
 def conditional_get_reference_vision_frame() -> VisionFrame:
-	if state_manager.get_item('workflow_mode') == 'image-to-video':
-		return read_static_video_frame(state_manager.get_item('target_path'), state_manager.get_item('reference_frame_number'))
-	return read_static_image(state_manager.get_item('target_path'))
+	target_path = state_manager.get_item('target_path')
+	if state_manager.get_item('workflow_mode') == 'image-to-video' and is_video(target_path):
+		return read_static_video_frame(target_path, state_manager.get_item('reference_frame_number'))
+	return read_static_image(target_path)
 
 
 def conditional_get_source_audio_frame(frame_number : int) -> AudioFrame:
 	if state_manager.get_item('workflow_mode') == 'image-to-video':
-		trim_frame_start, _ = restrict_trim_frame(state_manager.get_item('target_path'), state_manager.get_item('trim_frame_start'), state_manager.get_item('trim_frame_end'))
-		temp_video_fps = restrict_video_fps(state_manager.get_item('target_path'), state_manager.get_item('output_video_fps'))
-		source_audio_path = get_first(filter_audio_paths(state_manager.get_item('source_paths')))
-		source_audio_frame = get_audio_frame(source_audio_path, temp_video_fps, frame_number - trim_frame_start)
-
-		if numpy.any(source_audio_frame):
-			return source_audio_frame
+		target_path = state_manager.get_item('target_path')
+		if is_video(target_path):
+			trim_frame_start, _ = restrict_trim_frame(target_path, state_manager.get_item('trim_frame_start'), state_manager.get_item('trim_frame_end'))
+			temp_video_fps = restrict_video_fps(target_path, state_manager.get_item('output_video_fps'))
+		else:
+			trim_frame_start = state_manager.get_item('trim_frame_start') or 0
+			temp_video_fps = state_manager.get_item('output_video_fps')
+		source_audio_path = get_first(filter_audio_paths(state_manager.get_item('source_paths'))) or get_first(filter_video_paths(state_manager.get_item('source_paths')))
+		if source_audio_path:
+			source_audio_frame = get_audio_frame(source_audio_path, temp_video_fps, frame_number - trim_frame_start)
+			if source_audio_frame is not None and numpy.any(source_audio_frame):
+				return source_audio_frame
 
 	return create_empty_audio_frame()
 
 
 def conditional_get_source_voice_frame(frame_number : int) -> AudioFrame:
 	if state_manager.get_item('workflow_mode') == 'image-to-video':
-		trim_frame_start, _ = restrict_trim_frame(state_manager.get_item('target_path'), state_manager.get_item('trim_frame_start'), state_manager.get_item('trim_frame_end'))
-		temp_video_fps = restrict_video_fps(state_manager.get_item('target_path'), state_manager.get_item('output_video_fps'))
-		source_audio_path = get_first(filter_audio_paths(state_manager.get_item('source_paths')))
-		source_voice_frame = get_voice_frame(source_audio_path, temp_video_fps, frame_number - trim_frame_start)
-
-		if numpy.any(source_voice_frame):
-			return source_voice_frame
+		target_path = state_manager.get_item('target_path')
+		if is_video(target_path):
+			trim_frame_start, _ = restrict_trim_frame(target_path, state_manager.get_item('trim_frame_start'), state_manager.get_item('trim_frame_end'))
+			temp_video_fps = restrict_video_fps(target_path, state_manager.get_item('output_video_fps'))
+		else:
+			trim_frame_start = state_manager.get_item('trim_frame_start') or 0
+			temp_video_fps = state_manager.get_item('output_video_fps')
+		source_audio_path = get_first(filter_audio_paths(state_manager.get_item('source_paths'))) or get_first(filter_video_paths(state_manager.get_item('source_paths')))
+		if source_audio_path:
+			source_voice_frame = get_voice_frame(source_audio_path, temp_video_fps, frame_number - trim_frame_start)
+			if source_voice_frame is not None and numpy.any(source_voice_frame):
+				return source_voice_frame
 
 	return create_empty_audio_frame()
 
 
 def conditional_get_target_vision_frames(frame_number : int) -> List[VisionFrame]:
-	if state_manager.get_item('workflow_mode') == 'image-to-video':
-		trim_frame_start, _ = restrict_trim_frame(state_manager.get_item('target_path'), state_manager.get_item('trim_frame_start'), state_manager.get_item('trim_frame_end'))
-		temp_video_fps = restrict_video_fps(state_manager.get_item('target_path'), state_manager.get_item('output_video_fps'))
-		video_fps = detect_video_fps(state_manager.get_item('target_path'))
+	target_path = state_manager.get_item('target_path')
+	if state_manager.get_item('workflow_mode') == 'image-to-video' and is_video(target_path):
+		trim_frame_start, _ = restrict_trim_frame(target_path, state_manager.get_item('trim_frame_start'), state_manager.get_item('trim_frame_end'))
+		temp_video_fps = restrict_video_fps(target_path, state_manager.get_item('output_video_fps'))
+		video_fps = detect_video_fps(target_path)
 		temp_frame_number = resolve_extract_frame_number(video_fps, temp_video_fps, trim_frame_start) + frame_number - trim_frame_start
 		video_frame_number = resolve_target_frame_number(video_fps, temp_video_fps, temp_frame_number)
 
-		return select_video_frames(state_manager.get_item('target_path'), video_frame_number, state_manager.get_item('target_frame_amount'))
-	return [ read_static_image(state_manager.get_item('target_path')) ]
+		return select_video_frames(target_path, video_frame_number, state_manager.get_item('target_frame_amount'))
+	return [ read_static_image(target_path) ]
+
+
+def conditional_get_source_vision_frames(frame_number : int) -> List[VisionFrame]:
+	source_paths = state_manager.get_item('source_paths')
+	source_vision_frames = []
+
+	if source_paths:
+		for source_path in source_paths:
+			if is_video(source_path):
+				frame_total = count_video_frame_total(source_path)
+				video_frame_number = frame_number % frame_total if frame_total > 0 else frame_number
+				source_vision_frame = read_video_frame(source_path, video_frame_number)
+				if source_vision_frame is not None:
+					source_vision_frames.append(source_vision_frame)
+			elif is_image(source_path):
+				source_vision_frame = read_static_image(source_path)
+				if source_vision_frame is not None:
+					source_vision_frames.append(source_vision_frame)
+
+	return source_vision_frames
 
 
 def process_temp_frame(target_vision_frames : List[VisionFrame], temp_vision_frame : VisionFrame, frame_number : int) -> VisionFrame:
 	reference_vision_frame = conditional_get_reference_vision_frame()
-	source_vision_frames = read_static_images(state_manager.get_item('source_paths'))
+	source_vision_frames = conditional_get_source_vision_frames(frame_number)
 	source_audio_frame = conditional_get_source_audio_frame(frame_number)
 	source_voice_frame = conditional_get_source_voice_frame(frame_number)
 	temp_vision_mask = extract_vision_mask(temp_vision_frame)

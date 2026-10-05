@@ -1,9 +1,57 @@
+import ctypes
+import glob
 import os
 import shutil
 import subprocess
+import sys
 import xml.etree.ElementTree as ElementTree
 from functools import lru_cache
 from typing import List, Optional, Tuple
+
+
+def preload_cuda_libraries() -> None:
+	if sys.platform.startswith('linux'):
+		search_paths = []
+
+		for path in sys.path:
+			if os.path.isdir(path) and ('site-packages' in path or 'dist-packages' in path):
+				nvidia_dir = os.path.join(path, 'nvidia')
+				if os.path.isdir(nvidia_dir):
+					for sub in os.listdir(nvidia_dir):
+						lib_dir = os.path.join(nvidia_dir, sub, 'lib')
+						if os.path.isdir(lib_dir):
+							search_paths.append(lib_dir)
+
+		for cuda_dir in [ '/usr/local/cuda/lib64', '/usr/local/cuda-12/lib64', '/usr/local/cuda-12.0/lib64', '/usr/local/cuda-12.1/lib64', '/usr/local/cuda-12.2/lib64', '/usr/local/cuda-12.3/lib64', '/usr/local/cuda-12.4/lib64', '/usr/local/cuda-12.5/lib64', '/usr/local/cuda-12.6/lib64', '/usr/local/cuda-12.8/lib64' ]:
+			if os.path.isdir(cuda_dir):
+				search_paths.append(cuda_dir)
+
+		if search_paths:
+			existing_ld = os.environ.get('LD_LIBRARY_PATH', '')
+			new_paths = [ p for p in search_paths if p not in existing_ld.split(':') ]
+			if new_paths:
+				os.environ['LD_LIBRARY_PATH'] = ':'.join(new_paths + ([ existing_ld ] if existing_ld else []))
+
+			priority_prefixes =\
+			[
+				'libcuda.so',
+				'libculibos.so',
+				'libcurand.so',
+				'libcufft.so',
+				'libcublasLt.so',
+				'libcublas.so',
+				'libcudnn.so'
+			]
+			for prefix in priority_prefixes:
+				for directory in search_paths:
+					for file_path in sorted(glob.glob(os.path.join(directory, prefix + '*'))):
+						try:
+							ctypes.CDLL(file_path, mode = ctypes.RTLD_GLOBAL)
+						except Exception:
+							pass
+
+
+preload_cuda_libraries()
 
 import onnxruntime
 

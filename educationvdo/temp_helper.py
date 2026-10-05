@@ -1,13 +1,17 @@
 import os
 
 from educationvdo import state_manager
-from educationvdo.filesystem import create_directory, get_file_extension, get_file_name, move_file, remove_directory, resolve_file_pattern
+from educationvdo.filesystem import create_directory, get_file_extension, get_file_name, is_image, is_video_path, move_file, remove_directory, resolve_file_pattern
 from educationvdo.types import FrameSet
 
 
 def get_temp_file_path(file_path : str) -> str:
 	temp_directory_path = get_temp_directory_path(file_path)
-	temp_file_extension = get_file_extension(file_path)
+	output_path = state_manager.get_item('output_path')
+	if is_image(file_path) and (state_manager.get_item('workflow_mode') == 'image-to-video' or is_video_path(output_path)):
+		temp_file_extension = get_file_extension(output_path) if is_video_path(output_path) else '.mp4'
+	else:
+		temp_file_extension = get_file_extension(file_path)
 	return os.path.join(temp_directory_path, 'temp' + temp_file_extension)
 
 

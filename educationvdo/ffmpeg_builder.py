@@ -43,6 +43,10 @@ def set_progress() -> List[Command]:
 	return [ '-progress' ]
 
 
+def set_loop() -> List[Command]:
+	return [ '-loop', '1' ]
+
+
 def set_input(input_path : str) -> List[Command]:
 	return [ '-i', input_path ]
 

@@ -8,7 +8,7 @@ from educationvdo import benchmarker, cli_helper, logger, state_manager, transla
 from educationvdo.args import apply_args, collect_job_args, reduce_job_args, reduce_step_args
 from educationvdo.download import conditional_download_hashes, conditional_download_sources
 from educationvdo.exit_helper import hard_exit, signal_exit
-from educationvdo.filesystem import get_file_extension, get_file_name, is_video, resolve_file_paths, resolve_file_pattern
+from educationvdo.filesystem import get_file_extension, get_file_name, has_video, is_image, is_video, is_video_path, resolve_file_paths, resolve_file_pattern
 from educationvdo.jobs import job_helper, job_manager, job_runner
 from educationvdo.jobs.job_list import compose_job_list
 from educationvdo.processors.core import get_processors_modules
@@ -620,9 +620,16 @@ def conditional_process() -> ErrorCode:
 
 
 def detect_workflow_mode() -> WorkflowMode:
-	if is_video(
-		state_manager.get_item('target_path')
-	):
+	target_path = state_manager.get_item('target_path')
+	output_path = state_manager.get_item('output_path')
+	source_paths = state_manager.get_item('source_paths')
+
+	if is_video(target_path):
 		return 'image-to-video'
+
+	if is_image(target_path):
+		if is_video_path(output_path) or has_video(source_paths) or state_manager.get_item('workflow_mode') == 'image-to-video':
+			return 'image-to-video'
+		return 'image-to-image'
 
 	return 'image-to-image'

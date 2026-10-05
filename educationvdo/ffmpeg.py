@@ -8,8 +8,8 @@ from tqdm import tqdm
 
 import educationvdo.choices
 from educationvdo import ffmpeg_builder, ffprobe, logger, process_manager, state_manager, translator, vision
-from educationvdo.filesystem import get_file_format, remove_file
-from educationvdo.temp_helper import get_temp_file_path, get_temp_frame_pattern
+from educationvdo.filesystem import get_file_format, is_image, remove_file
+from educationvdo.temp_helper import get_temp_file_path, get_temp_frame_pattern, resolve_temp_frame_set
 from educationvdo.types import AudioBuffer, AudioEncoder, Command, EncoderSet, Fps, Resolution, UpdateProgress, VideoEncoder, VideoFormat, VideoReaderMetadata
 
 
@@ -175,6 +175,25 @@ def extract_frames(target_path : str, temp_video_resolution : Resolution, temp_v
 		return process.returncode == 0
 
 
+def spawn_frames(target_path : str, temp_video_resolution : Resolution, temp_video_fps : Fps, spawn_frame_total : int) -> bool:
+	duration = spawn_frame_total / temp_video_fps
+	temp_frame_pattern = get_temp_frame_pattern(target_path, '%08d')
+	commands = ffmpeg_builder.chain(
+		ffmpeg_builder.set_loop(),
+		ffmpeg_builder.set_input(target_path),
+		ffmpeg_builder.set_video_duration(duration),
+		ffmpeg_builder.set_video_fps(temp_video_fps),
+		ffmpeg_builder.set_media_resolution(vision.pack_resolution(temp_video_resolution)),
+		ffmpeg_builder.set_frame_quality(0),
+		ffmpeg_builder.set_start_number(0),
+		ffmpeg_builder.set_output(temp_frame_pattern)
+	)
+
+	with tqdm(total = spawn_frame_total, desc = translator.get('extracting'), unit = 'frame', ascii = ' =', disable = state_manager.get_item('log_level') in [ 'warn', 'error' ]) as progress:
+		process = run_ffmpeg_with_progress(commands, partial(update_progress, progress))
+		return process.returncode == 0
+
+
 def copy_image(target_path : str, temp_image_resolution : Resolution) -> bool:
 	temp_image_path = get_temp_file_path(target_path)
 
@@ -277,7 +296,11 @@ def merge_video(target_path : str, temp_video_fps : Fps, output_video_resolution
 	output_video_encoder = state_manager.get_item('output_video_encoder')
 	output_video_quality = state_manager.get_item('output_video_quality')
 	output_video_preset = state_manager.get_item('output_video_preset')
-	merge_frame_total = vision.predict_video_frame_total(target_path, output_video_fps, trim_frame_start, trim_frame_end)
+	if is_image(target_path):
+		merge_frame_total = len(resolve_temp_frame_set(target_path))
+		trim_frame_start = 0
+	else:
+		merge_frame_total = vision.predict_video_frame_total(target_path, output_video_fps, trim_frame_start, trim_frame_end)
 	temp_video_path = get_temp_file_path(target_path)
 	temp_video_format = cast(VideoFormat, get_file_format(temp_video_path))
 	temp_frame_pattern = get_temp_frame_pattern(target_path, '%08d')

@@ -3,7 +3,7 @@ import os
 from typing import Optional
 
 from educationvdo import state_manager
-from educationvdo.filesystem import get_file_extension, is_image, is_video
+from educationvdo.filesystem import get_file_extension, has_video, is_image, is_video
 
 
 def convert_int_none(value : int) -> Optional[int]:
@@ -21,6 +21,9 @@ def convert_str_none(value : str) -> Optional[str]:
 def suggest_output_path(output_directory_path : str, target_path : str) -> Optional[str]:
 	if is_image(target_path) or is_video(target_path):
 		output_file_name = hashlib.sha1(str(state_manager.get_state()).encode()).hexdigest()[:8]
-		target_file_extension = get_file_extension(target_path)
+		if is_image(target_path) and (state_manager.get_item('workflow_mode') == 'image-to-video' or has_video(state_manager.get_item('source_paths'))):
+			target_file_extension = '.mp4'
+		else:
+			target_file_extension = get_file_extension(target_path)
 		return os.path.join(output_directory_path, output_file_name + target_file_extension)
 	return None
