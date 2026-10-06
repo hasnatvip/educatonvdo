@@ -1,3 +1,5 @@
+import os
+import shutil
 from collections import deque
 from concurrent.futures import Future, ThreadPoolExecutor
 from typing import Deque
@@ -280,8 +282,30 @@ def restore_audio() -> ErrorCode:
 
 
 def finalize_video(start_time : float) -> ErrorCode:
-	if is_video(state_manager.get_item('output_path')):
-		logger.info(translator.get('processing_video_succeeded').format(seconds = calculate_end_time(start_time)), __name__)
+	output_path = state_manager.get_item('output_path')
+	if is_video(output_path):
+		seconds = calculate_end_time(start_time)
+		logger.info(translator.get('processing_video_succeeded').format(seconds = seconds), __name__)
+		logger.info(f'Output video saved to: {output_path}', __name__)
+		file_size_mb = os.path.getsize(output_path) / (1024 * 1024) if os.path.exists(output_path) else 0
+
+		# Update a convenient latest_output.mp4 reference if in Colab or an outputs directory
+		try:
+			latest_target = os.path.join(os.path.dirname(output_path), 'latest_output.mp4')
+			if latest_target != output_path:
+				shutil.copyfile(output_path, latest_target)
+		except Exception:
+			pass
+
+		print('\n' + '━' * 60, flush = True)
+		print(f'🎉 VIDEO PROCESSING SUCCEEDED IN {seconds}s!', flush = True)
+		print(f'📁 Saved video: {output_path} ({file_size_mb:.2f} MB)', flush = True)
+		print(f'📥 How to Download in Google Colab:', flush = True)
+		print(f'   1. Run Colab download command in a new cell:', flush = True)
+		print(f'      from google.colab import files; files.download("{output_path}")', flush = True)
+		print(f'   2. Or find it in the Colab file browser (left sidebar)', flush = True)
+		print(f'   3. Or click download on the Gradio video player', flush = True)
+		print('━' * 60 + '\n', flush = True)
 	else:
 		logger.error(translator.get('processing_video_failed'), __name__)
 		return 1

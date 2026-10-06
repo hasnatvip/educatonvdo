@@ -1,3 +1,5 @@
+import os
+
 from educationvdo.ffmpeg import concat_video
 from educationvdo.filesystem import are_images, are_videos, move_file, remove_file
 from educationvdo.jobs import job_helper, job_manager
@@ -10,6 +12,16 @@ def run_job(job_id : str, process_step : ProcessStep) -> bool:
 	if job_id in queued_job_ids:
 		if run_steps(job_id, process_step) and finalize_steps(job_id):
 			clean_steps(job_id)
+			output_set = collect_output_set(job_id)
+			for out_path in output_set.keys():
+				if os.path.exists(out_path):
+					size_mb = os.path.getsize(out_path) / (1024 * 1024)
+					print('\n' + '━' * 60, flush = True)
+					print(f'🎉 JOB FINISHED SUCCESSFULLY!', flush = True)
+					print(f'📁 Saved file: {out_path} ({size_mb:.2f} MB)', flush = True)
+					print(f'📥 Download in Google Colab:', flush = True)
+					print(f'   from google.colab import files; files.download("{out_path}")', flush = True)
+					print('━' * 60 + '\n', flush = True)
 			return job_manager.move_job_file(job_id, 'completed')
 		clean_steps(job_id)
 		job_manager.move_job_file(job_id, 'failed')

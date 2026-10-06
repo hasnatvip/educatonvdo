@@ -1,3 +1,5 @@
+import os
+
 import gradio
 
 from educationvdo import state_manager
@@ -128,4 +130,10 @@ def listen() -> None:
 
 
 def run(ui : gradio.Blocks) -> None:
-	ui.launch(share = True, favicon_path = 'educationvdo.ico', inbrowser = state_manager.get_item('open_browser'))
+	allowed_paths = [ os.getcwd(), '/tmp' ]
+	if os.path.exists('/content'):
+		allowed_paths.extend([ '/content', '/content/outputs' ])
+	outputs_dir = os.path.abspath('outputs')
+	if os.path.isdir(outputs_dir):
+		allowed_paths.append(outputs_dir)
+	ui.launch(share = True, favicon_path = 'educationvdo.ico', inbrowser = state_manager.get_item('open_browser'), allowed_paths = allowed_paths)

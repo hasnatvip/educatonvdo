@@ -1,3 +1,5 @@
+import os
+
 from educationvdo import content_analyser, ffmpeg, logger, process_manager, state_manager, translator
 from educationvdo.filesystem import is_image
 from educationvdo.processors.core import get_processors_modules
@@ -52,8 +54,21 @@ def finalize_image(start_time : float) -> ErrorCode:
 	else:
 		logger.warn(translator.get('finalizing_image_skipped'), __name__)
 
-	if is_image(state_manager.get_item('output_path')):
-		logger.info(translator.get('processing_image_succeeded').format(seconds = calculate_end_time(start_time)), __name__)
+	output_path = state_manager.get_item('output_path')
+	if is_image(output_path):
+		seconds = calculate_end_time(start_time)
+		logger.info(translator.get('processing_image_succeeded').format(seconds = seconds), __name__)
+		logger.info(f'Output image saved to: {output_path}', __name__)
+		file_size_mb = os.path.getsize(output_path) / (1024 * 1024) if os.path.exists(output_path) else 0
+
+		print('\n' + '━' * 60, flush = True)
+		print(f'🎉 IMAGE PROCESSING SUCCEEDED IN {seconds}s!', flush = True)
+		print(f'📁 Saved image: {output_path} ({file_size_mb:.2f} MB)', flush = True)
+		print(f'📥 How to Download in Google Colab:', flush = True)
+		print(f'   1. Run Colab download command in a new cell:', flush = True)
+		print(f'      from google.colab import files; files.download("{output_path}")', flush = True)
+		print(f'   2. Or find it in the Colab file browser (left sidebar)', flush = True)
+		print('━' * 60 + '\n', flush = True)
 	else:
 		logger.error(translator.get('processing_image_failed'), __name__)
 		return 1

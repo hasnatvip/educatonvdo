@@ -1,3 +1,4 @@
+import os
 from time import sleep
 from typing import Optional, Tuple
 
@@ -80,11 +81,25 @@ def run() -> Tuple[gradio.Button, gradio.Button, gradio.Image, gradio.Video]:
 		step_args['output_path'] = suggest_output_path(step_args.get('output_path'), state_manager.get_item('target_path'))
 	if job_manager.init_jobs(state_manager.get_item('jobs_path')):
 		create_and_run_job(step_args)
-		state_manager.set_item('output_path', output_path)
-	if is_image(step_args.get('output_path')):
-		return gradio.Button(visible = True), gradio.Button(visible = False), gradio.Image(value = step_args.get('output_path'), visible = True), gradio.Video(value = None, visible = False)
-	if is_video(step_args.get('output_path')):
-		return gradio.Button(visible = True), gradio.Button(visible = False), gradio.Image(value = None, visible = False), gradio.Video(value = step_args.get('output_path'), visible = True)
+	final_output = step_args.get('output_path')
+	if is_image(final_output):
+		size_mb = os.path.getsize(final_output) / (1024 * 1024) if os.path.exists(final_output) else 0
+		print('\n' + '━' * 60, flush = True)
+		print(f'🎉 IMAGE PROCESSING COMPLETED!', flush = True)
+		print(f'📁 Saved file: {final_output} ({size_mb:.2f} MB)', flush = True)
+		print(f'📥 Download in Google Colab:', flush = True)
+		print(f'   from google.colab import files; files.download("{final_output}")', flush = True)
+		print('━' * 60 + '\n', flush = True)
+		return gradio.Button(visible = True), gradio.Button(visible = False), gradio.Image(value = final_output, visible = True), gradio.Video(value = None, visible = False)
+	if is_video(final_output):
+		size_mb = os.path.getsize(final_output) / (1024 * 1024) if os.path.exists(final_output) else 0
+		print('\n' + '━' * 60, flush = True)
+		print(f'🎉 VIDEO PROCESSING COMPLETED!', flush = True)
+		print(f'📁 Saved file: {final_output} ({size_mb:.2f} MB)', flush = True)
+		print(f'📥 Download in Google Colab:', flush = True)
+		print(f'   from google.colab import files; files.download("{final_output}")', flush = True)
+		print('━' * 60 + '\n', flush = True)
+		return gradio.Button(visible = True), gradio.Button(visible = False), gradio.Image(value = None, visible = False), gradio.Video(value = final_output, visible = True)
 	return gradio.Button(visible = True), gradio.Button(visible = False), gradio.Image(value = None), gradio.Video(value = None)
 
 
