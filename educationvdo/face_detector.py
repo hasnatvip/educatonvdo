@@ -447,7 +447,7 @@ def prepare_detect_frame(temp_vision_frame : VisionFrame, face_detector_size : s
 	detect_vision_frame = numpy.zeros((face_detector_height, face_detector_width, 3))
 	detect_vision_frame[:temp_vision_frame.shape[0], :temp_vision_frame.shape[1], :] = temp_vision_frame
 	detect_vision_frame = numpy.expand_dims(detect_vision_frame.transpose(2, 0, 1), axis = 0).astype(numpy.float32)
-	return detect_vision_frame
+	return numpy.ascontiguousarray(detect_vision_frame)
 
 
 def normalize_detect_frame(detect_vision_frame : VisionFrame, normalize_range : Sequence[int]) -> VisionFrame:

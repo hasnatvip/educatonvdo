@@ -192,6 +192,7 @@ def detect_with_2dfan4(temp_vision_frame: VisionFrame, bounding_box: BoundingBox
 	crop_vision_frame = cv2.warpAffine(crop_vision_frame, rotation_matrix, rotation_size)
 	crop_vision_frame = conditional_optimize_contrast(crop_vision_frame)
 	crop_vision_frame = crop_vision_frame.transpose(2, 0, 1).astype(numpy.float32) / 255.0
+	crop_vision_frame = numpy.ascontiguousarray(crop_vision_frame)
 
 	face_landmark_68, face_heatmap = forward_with_2dfan4(crop_vision_frame)
 	face_landmark_68 = face_landmark_68[:, :, :2][0] / 64 * 256
@@ -213,6 +214,7 @@ def detect_with_hrffa(temp_vision_frame : VisionFrame, bounding_box : BoundingBo
 	crop_vision_frame = crop_vision_frame[:, :, ::-1].transpose(2, 0, 1).astype(numpy.float32) / 255.0
 	crop_vision_frame = (crop_vision_frame - 0.5) / 0.5
 	crop_vision_frame = numpy.expand_dims(crop_vision_frame, axis = 0)
+	crop_vision_frame = numpy.ascontiguousarray(crop_vision_frame)
 
 	face_landmark_68 = forward_with_hrffa(crop_vision_frame)
 	face_landmark_68 = face_landmark_68.reshape(-1, 2) * model_size[0]
@@ -233,6 +235,7 @@ def detect_with_peppa_wutz(temp_vision_frame : VisionFrame, bounding_box : Bound
 	crop_vision_frame = conditional_optimize_contrast(crop_vision_frame)
 	crop_vision_frame = crop_vision_frame.transpose(2, 0, 1).astype(numpy.float32) / 255.0
 	crop_vision_frame = numpy.expand_dims(crop_vision_frame, axis = 0)
+	crop_vision_frame = numpy.ascontiguousarray(crop_vision_frame)
 
 	prediction = forward_with_peppa_wutz(crop_vision_frame)
 	face_landmark_68 = prediction.reshape(-1, 3)[:, :2] / 64 * model_size[0]

@@ -189,7 +189,7 @@ def decompose_audio_chunk(temp_audio_chunk : AudioChunk, audio_trim_size : int) 
 	temp_audio_chunk = temp_audio_chunk.reshape(-1, 2, 2, audio_trim_size + 1, audio_bin_total).reshape(-1, audio_channel_total, audio_trim_size + 1, audio_bin_total)
 	temp_audio_chunk = temp_audio_chunk[:, :, :audio_frame_total]
 	temp_audio_chunk /= numpy.sqrt(1.0 / window.sum() ** 2)
-	return temp_audio_chunk
+	return numpy.ascontiguousarray(temp_audio_chunk)
 
 
 def compose_audio_chunk(temp_audio_chunk : AudioChunk, audio_trim_size : int) -> AudioChunk:

@@ -252,7 +252,7 @@ def prepare_crop_frame(crop_vision_frame : VisionFrame) -> VisionFrame:
 	crop_vision_frame = cv2.resize(crop_vision_frame, prepare_size, interpolation = cv2.INTER_AREA)
 	crop_vision_frame = crop_vision_frame[:, :, ::-1] / 255.0
 	crop_vision_frame = numpy.expand_dims(crop_vision_frame.transpose(2, 0, 1), axis = 0).astype(numpy.float32)
-	return crop_vision_frame
+	return numpy.ascontiguousarray(crop_vision_frame)
 
 
 def normalize_crop_frame(crop_vision_frame : VisionFrame) -> VisionFrame:

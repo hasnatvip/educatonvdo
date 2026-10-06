@@ -247,6 +247,7 @@ def create_region_mask(crop_vision_frame : VisionFrame, face_mask_regions : List
 	prepare_vision_frame = numpy.divide(prepare_vision_frame, numpy.array([ 0.229, 0.224, 0.225 ]).astype(numpy.float32))
 	prepare_vision_frame = numpy.expand_dims(prepare_vision_frame, axis = 0)
 	prepare_vision_frame = prepare_vision_frame.transpose(0, 3, 1, 2)
+	prepare_vision_frame = numpy.ascontiguousarray(prepare_vision_frame)
 	region_mask = forward_parse_face(prepare_vision_frame)
 	region_mask = numpy.isin(region_mask.argmax(0), [ educationvdo.choices.face_mask_region_set.get(face_mask_region) for face_mask_region in face_mask_regions ])
 	region_mask = cv2.resize(region_mask.astype(numpy.float32), crop_vision_frame.shape[:2][::-1])

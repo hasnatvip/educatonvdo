@@ -258,7 +258,7 @@ def prepare_vision_frame(vision_frame : VisionFrame) -> VisionFrame:
 	vision_frame = vision_frame[:, :, ::-1] / 255.0
 	vision_frame = (vision_frame - model_mean) / model_standard_deviation
 	vision_frame = numpy.expand_dims(vision_frame.transpose(2, 0, 1), axis = 0).astype(numpy.float32)
-	return vision_frame
+	return numpy.ascontiguousarray(vision_frame)
 
 
 def normalize_vision_frame(vision_frame : VisionFrame) -> VisionFrame:

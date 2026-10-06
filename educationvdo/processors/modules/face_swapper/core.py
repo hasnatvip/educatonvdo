@@ -713,7 +713,7 @@ def prepare_source_frame(source_face : Face, source_vision_frame : VisionFrame) 
 	source_vision_frame = source_vision_frame[:, :, ::-1] / 255.0
 	source_vision_frame = source_vision_frame.transpose(2, 0, 1)
 	source_vision_frame = numpy.expand_dims(source_vision_frame, axis = 0).astype(numpy.float32)
-	return source_vision_frame
+	return numpy.ascontiguousarray(source_vision_frame)
 
 
 def prepare_source_embedding(source_face : Face) -> Embedding:
@@ -775,7 +775,7 @@ def prepare_crop_frame(crop_vision_frame : VisionFrame) -> VisionFrame:
 	crop_vision_frame = (crop_vision_frame - model_mean) / model_standard_deviation
 	crop_vision_frame = crop_vision_frame.transpose(2, 0, 1)
 	crop_vision_frame = numpy.expand_dims(crop_vision_frame, axis = 0).astype(numpy.float32)
-	return crop_vision_frame
+	return numpy.ascontiguousarray(crop_vision_frame)
 
 
 def normalize_crop_frame(crop_vision_frame : VisionFrame) -> VisionFrame:

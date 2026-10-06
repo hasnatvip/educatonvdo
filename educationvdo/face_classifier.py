@@ -81,6 +81,7 @@ def classify_face(temp_vision_frame : VisionFrame, face_landmark_5 : FaceLandmar
 	crop_vision_frame /= model_standard_deviation
 	crop_vision_frame = crop_vision_frame.transpose(2, 0, 1)
 	crop_vision_frame = numpy.expand_dims(crop_vision_frame, axis = 0)
+	crop_vision_frame = numpy.ascontiguousarray(crop_vision_frame)
 	gender_id, age_id, race_id = forward(crop_vision_frame)
 	gender = categorize_gender(gender_id[0])
 	age = categorize_age(age_id[0])

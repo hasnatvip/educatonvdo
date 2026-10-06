@@ -275,7 +275,7 @@ def prepare_temp_frame(temp_vision_frame : VisionFrame) -> VisionFrame:
 	temp_vision_frame = cv2.resize(temp_vision_frame, model_size)
 	temp_vision_frame = temp_vision_frame.transpose((2, 0, 1))
 	temp_vision_frame = numpy.expand_dims(temp_vision_frame, axis = 0).astype(numpy.float32)
-	return temp_vision_frame
+	return numpy.ascontiguousarray(temp_vision_frame)
 
 
 def merge_color_frame(temp_vision_frame : VisionFrame, color_vision_frame : VisionFrame) -> VisionFrame:

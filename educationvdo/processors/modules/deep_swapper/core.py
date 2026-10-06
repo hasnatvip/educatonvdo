@@ -396,7 +396,7 @@ def prepare_crop_frame(crop_vision_frame : VisionFrame) -> VisionFrame:
 	crop_vision_frame = cv2.addWeighted(crop_vision_frame, 1.75, cv2.GaussianBlur(crop_vision_frame, (0, 0), 2), -0.75, 0)
 	crop_vision_frame = crop_vision_frame / 255.0
 	crop_vision_frame = numpy.expand_dims(crop_vision_frame, axis = 0).astype(numpy.float32)
-	return crop_vision_frame
+	return numpy.ascontiguousarray(crop_vision_frame)
 
 
 def normalize_crop_frame(crop_vision_frame : VisionFrame) -> VisionFrame:

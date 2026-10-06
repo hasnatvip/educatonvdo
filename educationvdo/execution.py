@@ -40,6 +40,13 @@ def preload_cuda_libraries() -> None:
 				'libcufft.so',
 				'libcublasLt.so',
 				'libcublas.so',
+				'libcudnn_ops.so',
+				'libcudnn_cnn.so',
+				'libcudnn_adv.so',
+				'libcudnn_graph.so',
+				'libcudnn_engines_runtime_compiled.so',
+				'libcudnn_engines_precompiled.so',
+				'libcudnn_heuristic.so',
 				'libcudnn.so'
 			]
 			for prefix in priority_prefixes:
@@ -50,10 +57,23 @@ def preload_cuda_libraries() -> None:
 						except Exception:
 							pass
 
+			for directory in search_paths:
+				for file_path in sorted(glob.glob(os.path.join(directory, 'libcudnn*.so*'))):
+					try:
+						ctypes.CDLL(file_path, mode = ctypes.RTLD_GLOBAL)
+					except Exception:
+						pass
+
 
 preload_cuda_libraries()
 
 import onnxruntime
+
+if hasattr(onnxruntime, 'preload_dlls'):
+	try:
+		onnxruntime.preload_dlls()
+	except Exception:
+		pass
 
 import educationvdo.choices
 from educationvdo.filesystem import create_directory, is_directory
@@ -171,14 +191,23 @@ def resolve_cache_path() -> str:
 
 
 def resolve_cudnn_conv_algo_search() -> str:
+	if 'EDUCATIONVDO_CUDNN_CONV_ALGO_SEARCH' in os.environ:
+		return os.environ['EDUCATIONVDO_CUDNN_CONV_ALGO_SEARCH']
+
 	execution_devices = detect_static_execution_devices()
-	product_names = ('GeForce GTX 1630', 'GeForce GTX 1650', 'GeForce GTX 1660')
+	product_names = (
+		'GeForce GTX 1630', 'GeForce GTX 1650', 'GeForce GTX 1660',
+		'Tesla T4', 'T4', 'Tesla',
+		'GeForce RTX 2060', 'GeForce RTX 2070', 'GeForce RTX 2080',
+		'TITAN RTX', 'Quadro T'
+	)
 
 	for execution_device in execution_devices:
-		if execution_device.get('product').get('name').startswith(product_names):
+		product_name = execution_device.get('product', {}).get('name', '')
+		if any(name in product_name for name in product_names):
 			return 'DEFAULT'
 
-	return 'EXHAUSTIVE'
+	return 'DEFAULT'
 
 
 def resolve_openvino_device_type(execution_device_id : int) -> str:
