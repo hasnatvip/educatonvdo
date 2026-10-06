@@ -20,12 +20,19 @@ def validate_args(program : ArgumentParser) -> bool:
 	return False
 
 
+import sys
+
+
 def validate_actions(program : ArgumentParser) -> bool:
+	valid = True
 	for action in program._actions:
 		if action.default and action.choices:
 			if isinstance(action.default, list):
-				if any(default not in action.choices for default in action.default):
-					return False
+				invalid = [default for default in action.default if default not in action.choices]
+				if invalid:
+					print(f"[ERROR] Invalid default for '{action.dest}': {invalid} not in {action.choices}", file=sys.stderr)
+					valid = False
 			elif action.default not in action.choices:
-				return False
-	return True
+				print(f"[ERROR] Invalid default for '{action.dest}': {action.default!r} not in {action.choices}", file=sys.stderr)
+				valid = False
+	return valid

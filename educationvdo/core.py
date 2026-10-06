@@ -33,8 +33,10 @@ def cli() -> None:
 			else:
 				program.print_help()
 		else:
+			print('[ERROR] Program argument validation failed. See above.', file=sys.stderr)
 			hard_exit(2)
 	else:
+		print('[ERROR] Application pre_check failed.', file=sys.stderr)
 		hard_exit(2)
 
 
@@ -69,12 +71,14 @@ def route(args: Args) -> None:
 		import educationvdo.uis.core as ui
 
 		if not common_pre_check() or not processors_pre_check():
+			print('[ERROR] Common or processor pre-check failed.', file=sys.stderr)
 			hard_exit(2)
 
 		for ui_layout in ui.get_ui_layouts_modules(
 			state_manager.get_item('ui_layouts')
 		):
 			if not ui_layout.pre_check():
+				print(f'[ERROR] UI layout {ui_layout} pre-check failed.', file=sys.stderr)
 				hard_exit(2)
 
 		ui.init()
